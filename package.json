@@ -1,0 +1,14 @@
+{
+  "name": "type-orm",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "repository": "git@github.com:liuwenzhuo-rose/type-orm.git",
+  "author": "liuwenzhuo.rose <liuwenzhuo.rose@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "mysql": "^2.18.1"
+  },
+  "devDependencies": {
+    "@types/mysql": "^2.15.20"
+  }
+}
