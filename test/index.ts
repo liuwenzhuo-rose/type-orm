@@ -1,15 +1,16 @@
-const Entity: ClassDecorator = (constructor: any) => {
-  constructor.prototype.hello = () => {
-    console.log('hello');
-  };
-};
-
-@Entity
+import { DAO } from '../src/DAO';
 class Student {
+  id?: number;
   name: string;
   age: number;
 }
 
-const Jack = new Student();
-Jack.name = 'Jack';
-Jack.age = 20;
+(async function () {
+  const StudentDAO = new DAO(Student);
+  const result = await StudentDAO.delete()
+    .where({
+      name: 'lucy',
+    })
+    .over();
+  console.log(result);
+})();
