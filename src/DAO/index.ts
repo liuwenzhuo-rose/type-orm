@@ -1,41 +1,42 @@
 import connection from '../connection';
 import { transformValue } from '../utils/common';
 
-export class DAO<T extends new () => any> {
+export default class DAO<T extends new () => any> {
   private tableName: string;
   private sql: string;
 
   constructor(target: T) {
-    this.tableName = target.name.toLowerCase();
+    this.tableName = (target as any).tableName;
   }
 
-  select(keys: Array<keyof InstanceType<T>>) {
-    const keysStr = keys.reduce((pre, key) => {
-      return `${pre}${pre && ', '}${key}`;
-    }, '');
+  select(...keys: Array<keyof InstanceType<T>>) {
+    const keysStr = keys.join(', ');
     this.sql = `SELECT ${keysStr} FROM ${this.tableName}`;
-    return this as Pick<this, 'where' | 'over'>;
+    return this as Pick<this, 'where' | 'over' | 'orderBy'>;
+  }
+
+  selectAll() {
+    this.sql = `SELECT * FROM ${this.tableName}`;
+    return this as Pick<this, 'over' | 'orderBy'>;
   }
 
   update(instance: Partial<InstanceType<T>>) {
     const keys = Object.keys(instance);
-    const assignmentStr = keys.reduce((pre, key) => {
-      return `${pre}${pre && ', '}${key}=${transformValue(instance[key])}`;
-    }, '');
+    const assignmentStr = keys
+      .map((key) => `${key}=${transformValue(instance[key])}`)
+      .join(', ');
     this.sql = `UPDATE ${this.tableName} SET ${assignmentStr}`;
-    return this as Omit<this, 'update' | 'select' | 'delete' | 'insert'>;
+    return this as Pick<this, 'where'>;
   }
 
   insert(instance: InstanceType<T>) {
     const keys = Object.keys(instance);
     const values = Object.values(instance);
-    const keysStr = keys.reduce((pre, key) => {
-      return `${pre}${pre && ', '}${key}`;
-    }, '');
-    const valuesStr = values.reduce((pre, value) => {
-      return `${pre}${pre && ', '}${transformValue(value)}`;
-    }, '');
-    this.sql = `INSERT INTO ${this.tableName}(${keysStr}) VALUES(${valuesStr})`;
+    const keysStr = `(${keys.join(', ')})`;
+    const valuesStr = `(${values
+      .map((value) => transformValue(value))
+      .join(', ')})`;
+    this.sql = `INSERT INTO ${this.tableName} ${keysStr} VALUES ${valuesStr}`;
     return this as Pick<this, 'over'>;
   }
 
@@ -46,19 +47,37 @@ export class DAO<T extends new () => any> {
 
   where(instance: Partial<InstanceType<T>>) {
     const keys = Object.keys(instance);
-    const assignmentStr = keys.reduce((pre, key) => {
-      return `${pre}${pre && ' AND '}${key}=${transformValue(instance[key])}`;
-    }, '');
+    const assignmentStr = keys
+      .map((key) => `${key}=${transformValue(instance[key])}`)
+      .join(' AND ');
     this.sql = `${this.sql} WHERE ${assignmentStr}`;
-    return this as Omit<
-      this,
-      'where' | 'update' | 'select' | 'delete' | 'insert'
-    >;
+    return this as Pick<this, 'over'>;
+  }
+
+  orderBy(key: keyof InstanceType<T>, order: 'ASC' | 'DESC' = 'ASC') {
+    this.sql = `${this.sql} ORDER BY ${key} ${order}`;
+    return this as Pick<this, 'over'>;
   }
 
   over() {
     this.sql = this.sql + ';';
-    const sql = this.sql;
+    return new Promise((resolve, reject) => {
+      connection.query(this.sql, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          console.log(this.sql);
+          this.sql = '';
+          resolve(result);
+        }
+      });
+    }).catch((err) => {
+      return err;
+    });
+  }
+
+  // 自定义sql语句
+  query(sql: string) {
     return new Promise((resolve, reject) => {
       connection.query(sql, (err, result) => {
         if (err) {

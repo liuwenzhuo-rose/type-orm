@@ -1,4 +1,10 @@
 "use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8,18 +14,26 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const src_1 = require("../src");
-class Student {
-}
+const dao_1 = __importDefault(require("../src/dao"));
+const table_1 = __importDefault(require("../src/decorators/table"));
+let Student = class Student {
+};
+Student = __decorate([
+    (0, table_1.default)('student')
+], Student);
 (function () {
     return __awaiter(this, void 0, void 0, function* () {
-        const StudentDAO = new src_1.DAO(Student);
-        const result = yield StudentDAO.delete()
+        const StudentDAO = new dao_1.default(Student);
+        const result = yield StudentDAO.select('age', 'name')
             .where({
-            name: 'lucy',
+            id: 9,
+            name: 'xiaomei',
         })
             .over();
-        console.log(result);
+        console.log('------', result);
     });
 })();

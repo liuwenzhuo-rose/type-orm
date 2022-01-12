@@ -1,4 +1,7 @@
-import { DAO } from '../src/DAO';
+import DAO from '../src/dao';
+import table from '../src/decorators/table';
+
+@table('student')
 class Student {
   id?: number;
   name: string;
@@ -7,10 +10,11 @@ class Student {
 
 (async function () {
   const StudentDAO = new DAO(Student);
-  const result = await StudentDAO.delete()
+  const result = await StudentDAO.select('age', 'name')
     .where({
-      name: 'lucy',
+      id: 9,
+      name: 'xiaomei',
     })
     .over();
-  console.log(result);
+  console.log('------', result);
 })();
