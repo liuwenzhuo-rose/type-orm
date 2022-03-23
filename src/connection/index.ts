@@ -1,7 +1,7 @@
 import mysql from 'mysql';
 import path from 'path';
 
-const ormConfig = require(path.join(process.cwd(), 'ormconfig.json'));
+const ormConfig = require(path.resolve(process.cwd(), 'orm.config.json'));
 const connection = mysql.createConnection(ormConfig);
 
 connection.connect((err) => {
