@@ -1,18 +1,16 @@
 import connection from '../connection';
+import log from '../logger';
 
 // 修饰DAO对象方法，开启事务
-const transaction: MethodDecorator = (
-  targetMethod,
-  propertyKey,
-  descriptor
-) => {
-  const wrapMethod = () => {
+const Transaction: MethodDecorator = (target, propertyKey, descriptor) => {
+  const wrapMethod = function (this: any) {
+    const that = this;
     return new Promise((resolve, reject) => {
       connection.beginTransaction((err) => {
         if (err) {
           console.log(err);
         } else {
-          (descriptor.value as any)().then(
+          (descriptor.value as unknown as Function).call(that).then(
             (result: any) => {
               resolve(result);
               connection.commit();
@@ -33,4 +31,4 @@ const transaction: MethodDecorator = (
   };
 };
 
-export default transaction;
+export default Transaction;

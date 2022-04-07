@@ -2,12 +2,23 @@ import connection from '../connection';
 import log from '../logger';
 import { transformValue } from '../utils/common';
 
-export default class DAO<T extends new () => any> {
+export interface Entity {
+  new (): any;
+  tableName?: string;
+}
+
+export interface Pagination {
+  current?: number;
+  pageSize?: number;
+  total?: number;
+}
+
+class Wrapper<T extends Entity> {
   private tableName: string;
   private sql: string;
 
   constructor(target: T) {
-    this.tableName = (target as any)?.tableName;
+    this.tableName = target?.tableName || 'undefined';
   }
 
   select(...keys: Array<keyof InstanceType<T>>) {
@@ -19,6 +30,16 @@ export default class DAO<T extends new () => any> {
   selectAll() {
     this.sql = `SELECT * FROM ${this.tableName}`;
     return this as Pick<this, 'over' | 'orderBy'>;
+  }
+
+  // 分页查询
+  selectPage(pagination: Pagination) {
+    // 默认当前第一页，一页十条数据
+    const { current = 1, pageSize = 10 } = pagination;
+    this.sql = `SELECT * FROM ${this.tableName} LIMIT ${pageSize} OFFSET ${
+      (current - 1) * pageSize
+    }`;
+    return this as Pick<this, 'over'>;
   }
 
   update(instance: Partial<InstanceType<T>>) {
@@ -37,7 +58,7 @@ export default class DAO<T extends new () => any> {
     const valuesStr = `(${values
       .map((value) => transformValue(value))
       .join(', ')})`;
-    this.sql = `INSERT INTO ${this.tableName} ${keysStr} VALUES ${valuesStr}`;
+    this.sql = `INSERT INTO ${this.tableName}${keysStr} VALUES${valuesStr}`;
     return this as Pick<this, 'over'>;
   }
 
@@ -88,6 +109,7 @@ export default class DAO<T extends new () => any> {
     return new Promise((resolve, reject) => {
       connection.query(sql, (err, result) => {
         if (err) {
+          log(sql, err);
           reject(err);
         } else {
           console.log(sql);
@@ -97,3 +119,5 @@ export default class DAO<T extends new () => any> {
     });
   }
 }
+
+export default Wrapper;
