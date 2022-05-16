@@ -17,6 +17,15 @@ class StudentService {
     return this.studentDao.update(student).where({ id: student.id }).over();
   }
 
+  select(id: number) {
+    return this.studentDao
+      .select('id', 'name', 'age')
+      .where({
+        id,
+      })
+      .over();
+  }
+
   selectAll() {
     return this.studentDao.selectAll().over();
   }
@@ -27,7 +36,7 @@ class StudentService {
 
   @Transaction
   async deleteThenUpdate() {
-    const res1 = await this.studentDao.delete().where({ id: 2 }).over();
+    const res1 = await this.studentDao.delete().where({ id: 4 }).over();
     console.log(res1);
     const res2 = await this.studentDao
       .update({ fieldNotExist: 'age' } as any)

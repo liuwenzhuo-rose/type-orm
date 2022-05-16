@@ -10,10 +10,11 @@ if (!fs.existsSync(path.dirname(logPath))) {
 }
 
 const log = (sql: string, err: any) => {
-  const logTime = `----------${new Date().toLocaleString()}----------\n`;
+  const logTime = `--------------------${new Date().toLocaleString()}--------------------\n`;
   const logSql = `SQL: ${sql}\n`;
   const logErr = `${err}\n`;
   const logInfo = `${logTime}${logSql}${logErr}\n`;
+  console.log(logInfo);
   fs.appendFile(logPath, logInfo, (err) => {
     console.log(err);
   });

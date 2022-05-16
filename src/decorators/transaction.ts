@@ -1,33 +1,31 @@
-import connection from '../connection';
-import log from '../logger';
+import connection from '../pool';
 
-// 修饰DAO对象方法，开启事务
 const Transaction: MethodDecorator = (target, propertyKey, descriptor) => {
-  const wrapMethod = function (this: any) {
+  console.log(target, propertyKey, descriptor);
+  const originMethod = descriptor.value as unknown as Function;
+  const proxyMethod = function (this: any) {
     const that = this;
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _) => {
       connection.beginTransaction((err) => {
         if (err) {
-          console.log(err);
-        } else {
-          (descriptor.value as unknown as Function).call(that).then(
-            (result: any) => {
-              resolve(result);
-              connection.commit();
-            },
-            (err: any) => {
-              console.log(err);
-              connection.rollback();
-            }
-          );
+          return console.log(err);
         }
+        originMethod.call(that).then(
+          (result: any) => {
+            resolve(result);
+            connection.commit();
+          },
+          (err: any) => {
+            connection.rollback();
+          }
+        );
       });
     });
   };
 
   return {
     ...descriptor,
-    value: wrapMethod as any,
+    value: proxyMethod as any,
   };
 };
 

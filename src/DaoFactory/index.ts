@@ -1,4 +1,4 @@
-import connection from '../connection';
+import connection from '../pool';
 import log from '../logger';
 import { transformValue } from '../utils/common';
 
@@ -13,7 +13,7 @@ export interface Pagination {
   total?: number;
 }
 
-class Wrapper<T extends Entity> {
+class DaoFactory<T extends Entity> {
   private tableName: string;
   private sql: string;
 
@@ -120,4 +120,4 @@ class Wrapper<T extends Entity> {
   }
 }
 
-export default Wrapper;
+export default DaoFactory;

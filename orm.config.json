@@ -4,5 +4,9 @@
   "user": "root",
   "password": "123456",
   "database": "type_orm",
-  "log": "./log/orm.log"
+  "log": "./log/orm.log",
+  "connectionLimit" : 10,
+  "queueLimit": 0,
+  "acquireTimeout": 10000,
+  "waitForConnections": true
 }
